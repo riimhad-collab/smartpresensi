@@ -1,0 +1,37 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() { return request.auth != null; }
+    function adminPath() { return /databases/$(database)/documents/meta/admin; }
+    function isAdmin() { return signedIn() && exists(adminPath()) && get(adminPath()).data.uid == request.auth.uid; }
+    function myPath() { return /databases/$(database)/documents/users/$(request.auth.uid); }
+    // guru aktif hanya untuk kelas yang ditetapkan admin
+    function teaches(k) { return signedIn() && exists(myPath()) && get(myPath()).data.aktif == true && get(myPath()).data.kelas == k; }
+
+    // akun pertama yang masuk mendaftarkan dirinya sebagai admin; setelah itu tidak bisa diganti dari aplikasi
+    match /meta/admin {
+      allow read: if signedIn();
+      allow create: if signedIn() && request.resource.data.keys().hasOnly(['uid']) && request.resource.data.uid == request.auth.uid;
+      allow update, delete: if false;
+    }
+    // identitas sekolah, jam presensi, logo
+    match /meta/sekolah {
+      allow read: if signedIn();
+      allow write: if isAdmin();
+    }
+    // profil guru: guru membuat profilnya sendiri tanpa kelas dan belum aktif; kelas dan status hanya diubah admin
+    match /users/{uid} {
+      allow read: if signedIn() && (request.auth.uid == uid || isAdmin());
+      allow create: if signedIn() && request.auth.uid == uid && request.resource.data.kelas == '' && request.resource.data.aktif == false;
+      allow update: if isAdmin() || (signedIn() && request.auth.uid == uid
+                    && request.resource.data.kelas == resource.data.kelas
+                    && request.resource.data.aktif == resource.data.aktif);
+      allow delete: if isAdmin();
+    }
+    // semua data kelas: siswa, presensi harian, foto, pola wajah
+    match /kelas/{k}/{document=**} {
+      allow read, write: if isAdmin() || teaches(k);
+    }
+  }
+}

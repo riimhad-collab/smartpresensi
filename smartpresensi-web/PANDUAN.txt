@@ -1,0 +1,70 @@
+SMARTPRESENSI - PANDUAN PASANG (gratis, tanpa beli hosting)
+============================================================
+
+Isi folder ini:
+  index.html        aplikasinya
+  models/           pengenal wajah (jangan diubah)
+  firestore.rules   aturan keamanan untuk ditempel di Firebase
+  PANDUAN.txt       file ini
+
+Nama menu di Firebase dan GitHub bisa sedikit berbeda dari tulisan di sini.
+Kalau bingung, kirim foto layarnya ke Claude.
+
+A. BUAT PROYEK FIREBASE (sekali saja)
+ 1. Buka console.firebase.google.com, masuk dengan akun Google sekolah.
+ 2. Buat proyek baru, misalnya "smartpresensi-sdn". Google Analytics boleh dimatikan.
+ 3. Menu Authentication -> mulai -> metode masuk -> aktifkan "Email/Password".
+ 4. Menu Firestore Database -> buat database -> mode produksi -> pilih lokasi
+    terdekat (misalnya Jakarta atau Singapura).
+ 5. Di Firestore Database buka tab Rules. Hapus isinya, tempel seluruh isi file
+    firestore.rules, lalu Publish.
+ 6. Di halaman utama proyek, tambah aplikasi jenis Web (ikon </>). Beri nama bebas.
+    Tidak perlu mencentang Firebase Hosting. Akan muncul kode seperti:
+        const firebaseConfig = { apiKey: "...", authDomain: "...", ... };
+
+B. SAMBUNGKAN APLIKASI
+ Cara mudah: kirim kode firebaseConfig itu ke Claude, nanti dikirim balik
+ index.html yang sudah tersambung.
+ Cara sendiri: buka index.html dengan Notepad, cari baris
+        const FIREBASE_CONFIG=null;
+ lalu ganti kata null dengan isi kurung kurawal dari Firebase, contoh:
+        const FIREBASE_CONFIG={ apiKey: "...", authDomain: "...", projectId: "...", appId: "..." };
+ Simpan.
+
+C. PASANG DI HOSTING GRATIS (GitHub Pages)
+ 1. Buat akun di github.com, lalu buat repository baru bertipe Public,
+    misalnya "smartpresensi".
+ 2. Unggah index.html dan folder models ke repository itu (Add file -> Upload files).
+    Folder models harus tetap bernama "models" dan berisi 6 file.
+ 3. Settings -> Pages -> sumber "Deploy from a branch" -> branch main -> Save.
+    Tunggu beberapa menit sampai muncul alamat seperti
+        https://namaakun.github.io/smartpresensi/
+ 4. Kembali ke Firebase: Authentication -> Settings -> Authorized domains ->
+    tambahkan namaakun.github.io
+
+D. PEMAKAIAN PERTAMA
+ 1. Buka alamat aplikasi. ADMIN HARUS MENDAFTAR PALING PERTAMA: pilih
+    "Guru baru? Daftar akun", isi nama, email, kata sandi.
+    Akun pertama otomatis menjadi admin dan bisa melihat semua kelas.
+ 2. Admin: menu Pengaturan -> isi identitas sekolah, logo, jam presensi.
+ 3. Guru mendaftar sendiri dengan cara yang sama. Mereka akan melihat tulisan
+    "Akun menunggu persetujuan".
+ 4. Admin: menu Guru -> pilih kelas tiap guru -> ubah status menjadi Aktif.
+ 5. Guru masuk lagi (atau ketuk "Periksa lagi") dan langsung berada di kelasnya.
+    Guru tidak bisa membuka kelas lain.
+ 6. Di HP: buka alamat aplikasi di Chrome atau Safari, lalu pilih
+    "Tambahkan ke layar utama" supaya muncul seperti aplikasi.
+
+E. PRESENSI WAJAH
+ - Manual: tombol "Scan wajah siswa", foto satu anak, nama dan jam tercatat.
+ - Otomatis: tombol "Mode otomatis: kamera menyala terus". Izinkan kamera.
+   Anak menghadap kamera, nama dan jam tercatat sendiri, ada bunyi tanda.
+   Wajah yang belum dikenal: ketuk "Pilih nama" sekali, setelah itu diingat.
+ - Daftarkan wajah tiap siswa di menu Siswa (3 foto) supaya lebih akurat.
+
+F. BATAS PAKET GRATIS
+ - Database gratis sekitar 1 GB. Dengan foto, enam kelas kira-kira penuh
+   dalam setahun. Unduh Excel bulanan sebagai arsip.
+ - Jika lupa kata sandi: tombol "Lupa kata sandi" mengirim email atur ulang.
+ - Mengganti admin hanya bisa dari konsol Firebase: Firestore -> meta -> admin
+   -> ubah nilai uid.
